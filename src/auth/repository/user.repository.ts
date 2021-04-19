@@ -3,12 +3,15 @@ import { User } from '../entity/user.entity';
 import { SignupDto } from '../dto/signup.dto';
 import * as bcrypt from 'bcrypt';
 import {
+  BadRequestException,
   ConflictException,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { SigninDto } from '../dto/signin.dto';
+import { ChangePasswordDto } from '../dto/changePassword.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -22,7 +25,7 @@ export class UserRepository extends Repository<User> {
     const user = new User();
     user.username = username;
     user.email = email;
-    user.password = await this.hashPassword(password, saltOrRounds);
+    user.password = await UserRepository.hashPassword(password, saltOrRounds);
     try {
       await user.save();
       this.logger.log('Saving user to Database');
@@ -45,7 +48,10 @@ export class UserRepository extends Repository<User> {
       this.logger.error('Email is not correct');
       throw new UnauthorizedException('Email or Password is not correct');
     }
-    const isMatch = await this.comparePassword(password, user.password);
+    const isMatch = await UserRepository.comparePassword(
+      password,
+      user.password,
+    );
     if (!isMatch) {
       this.logger.error('Password is not correct');
       throw new UnauthorizedException('Email or Password is not correct');
@@ -53,13 +59,61 @@ export class UserRepository extends Repository<User> {
     return user;
   }
 
+  // changePassword
+
+  async changePassword(
+    user,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<User> {
+    const { comfirmPassword, newPassword, currentPassword } = changePasswordDto;
+    const saltOrRounds = await bcrypt.genSalt(12);
+    const found = await this.findOne(user.id);
+    if (!found) {
+      throw new NotFoundException('User not found');
+    }
+    const isMatch = await UserRepository.comparePassword(
+      currentPassword,
+      found.password,
+    );
+    if (!isMatch) {
+      throw new UnauthorizedException('Current Password is not correct');
+    }
+    const isSame = await UserRepository.comparePassword(
+      newPassword,
+      found.password,
+    );
+    if (isSame) {
+      throw new UnauthorizedException(
+        'New password cannot be the same with Current Password',
+      );
+    }
+    if (newPassword !== comfirmPassword) {
+      throw new BadRequestException(
+        'New password must be the same with confirm password',
+      );
+    }
+    found.password = await UserRepository.hashPassword(
+      newPassword,
+      saltOrRounds,
+    );
+    try {
+      await found.save();
+      return found;
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
+  }
+
   //  Hash password
-  private async hashPassword(password: string, salt: string): Promise<string> {
+  private static async hashPassword(
+    password: string,
+    salt: string,
+  ): Promise<string> {
     return await bcrypt.hash(password, salt);
   }
 
   // Comparing user password
-  private async comparePassword(
+  private static async comparePassword(
     password: string,
     hash: string,
   ): Promise<boolean> {
