@@ -8,9 +8,11 @@ import {
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Roles } from '../enums/role.enum';
 import { Gender } from '../enums/gender.enum';
+import { Post } from '../../post/entity/post.entity';
 
 @Entity()
 @Unique(['email'])
@@ -35,6 +37,9 @@ export class User extends BaseEntity {
 
   @Column({ enum: Roles, nullable: false, default: Roles.USER })
   role: string;
+
+  @OneToMany((type) => Post, (post) => post.user, { eager: true })
+  posts: Post[];
 
   @Column({ nullable: true })
   resetToken: string;

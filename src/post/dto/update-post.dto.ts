@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { CreateDateColumn } from 'typeorm';
 
-export class CreatePostDto {
+export class UpdatePostDto {
   @IsString()
   @IsNotEmpty()
   title: string;

@@ -19,7 +19,7 @@ import { ChangePasswordDto } from './dto/changePassword.dto';
 import { ForgotLinkDto } from './dto/forgotLink.dto';
 import { randomBytes } from 'crypto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
-import { FilterDto } from "./dto/filter.dto";
+import { FilterDto } from './dto/filter.dto';
 
 @Injectable()
 export class AuthService {
@@ -175,7 +175,11 @@ export class AuthService {
   }
 
   //  getAllUser
-  async getAllUsers(filterDto: FilterDto): Promise<User[]> {
-    return await this.userRepository.getAllUsers(filterDto);
+  async getAllUsers(filterDto: FilterDto): Promise<User[] | any> {
+    const user = await this.userRepository.getAllUsers(filterDto);
+    if (user.length === 0) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }
