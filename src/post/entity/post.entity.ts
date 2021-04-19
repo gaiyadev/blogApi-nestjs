@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -10,23 +11,21 @@ import {
 
 @Entity()
 @Unique(['title'])
+@Index(['id', 'title'])
 export class Post extends BaseEntity {
   @PrimaryGeneratedColumn()
+  @Index()
   id: number;
 
-  @Column()
+  @Column({ nullable: false, type: 'varchar' })
   title: string;
 
-  @Column()
+  @Column({ nullable: false, type: 'varchar' })
   body: string;
 
-  @CreateDateColumn({ type: 'timestamp without time zone', default: 'NOW()' })
+  @CreateDateColumn({ nullable: false })
   createdAt: Date;
 
-  @UpdateDateColumn({
-    type: 'timestamp without time zone',
-    onUpdate: 'NOW()',
-    nullable: true,
-  })
+  @UpdateDateColumn({ nullable: false })
   updatedAt: Date;
 }

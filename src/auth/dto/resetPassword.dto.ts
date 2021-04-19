@@ -9,20 +9,15 @@ import {
 } from 'class-validator';
 import { Gender } from '../enums/gender.enum';
 
-export class SignupDto {
+export class ResetPasswordDto {
   @IsNotEmpty()
+  @MinLength(6)
   @IsString()
-  @MinLength(4)
   @MaxLength(20)
-  username: string;
-
-  @IsNotEmpty()
-  @IsEmail()
-  email: string;
-
-  @IsEnum(Gender, { message: `Gender must be Male or Female` })
-  gender: Gender;
-
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: 'New Password is too weak',
+  })
+  newPassword: string;
   @IsNotEmpty()
   @MinLength(6)
   @IsString()
@@ -30,5 +25,5 @@ export class SignupDto {
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'Password is too weak',
   })
-  password: string;
+  confirmPassword: string;
 }

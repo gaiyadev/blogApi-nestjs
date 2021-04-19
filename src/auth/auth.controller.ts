@@ -1,13 +1,13 @@
 import {
   Body,
   Controller,
-  Get,
+  Get, Param, ParseIntPipe,
   Post,
   Put,
   UseGuards,
   UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+  ValidationPipe
+} from "@nestjs/common";
 import { AuthService } from './auth.service';
 import { User } from './entity/user.entity';
 import { SignupDto } from './dto/signup.dto';
@@ -17,6 +17,7 @@ import { GetUser } from './decorator/getAuthUser.decorator';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { ForgotLinkDto } from './dto/forgotLink.dto';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -71,5 +72,14 @@ export class AuthController {
     @Body() forgotPasswordDto: ForgotLinkDto,
   ): Promise<User> {
     return await this.authService.forgotPasswordSentLink(forgotPasswordDto);
+  }
+  //  Reset password
+  @Put('/resetPassword/:token')
+  @UsePipes(ValidationPipe)
+  async resetPassword(
+    @Param('token') token: string,
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ): Promise<User> {
+    return await this.authService.resetPassword(token, resetPasswordDto);
   }
 }
