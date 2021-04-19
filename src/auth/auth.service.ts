@@ -19,6 +19,7 @@ import { ChangePasswordDto } from './dto/changePassword.dto';
 import { ForgotLinkDto } from './dto/forgotLink.dto';
 import { randomBytes } from 'crypto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
+import { FilterDto } from "./dto/filter.dto";
 
 @Injectable()
 export class AuthService {
@@ -171,5 +172,10 @@ export class AuthService {
       },
       message: 'Password reset successfully',
     };
+  }
+
+  //  getAllUser
+  async getAllUsers(filterDto: FilterDto): Promise<User[]> {
+    return await this.userRepository.getAllUsers(filterDto);
   }
 }

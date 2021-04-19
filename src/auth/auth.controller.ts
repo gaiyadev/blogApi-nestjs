@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
-  Get, Param, ParseIntPipe,
+  Get,
+  Param,
+  ParseIntPipe,
   Post,
-  Put,
+  Put, Query,
   UseGuards,
   UsePipes,
   ValidationPipe
@@ -18,6 +20,7 @@ import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { ForgotLinkDto } from './dto/forgotLink.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
+import { FilterDto } from "./dto/filter.dto";
 
 @Controller('auth')
 export class AuthController {
@@ -81,5 +84,14 @@ export class AuthController {
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<User> {
     return await this.authService.resetPassword(token, resetPasswordDto);
+  }
+
+  //  Get all users
+  @Get('users')
+  @UseGuards(AuthGuard())
+  async getAllUsers(
+    @Query(ValidationPipe) filterDto: FilterDto,
+  ): Promise<User[]> {
+    return await this.authService.getAllUsers(filterDto);
   }
 }

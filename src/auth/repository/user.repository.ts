@@ -13,6 +13,7 @@ import {
 import { SigninDto } from '../dto/signin.dto';
 import { ChangePasswordDto } from '../dto/changePassword.dto';
 import { ResetPasswordDto } from '../dto/resetPassword.dto';
+import { FilterDto } from '../dto/filter.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -142,6 +143,34 @@ export class UserRepository extends Repository<User> {
       return user;
     } catch (err) {
       this.logger.error(`Internal server error ${err.stack}`);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  //getAllUser
+
+  async getAllUsers(filterDto: FilterDto): Promise<User[]> {
+    const { id, username, email } = filterDto;
+    const query = this.createQueryBuilder('user');
+
+    if (id) {
+      query.andWhere('user.id= :id', { id });
+    }
+    if (username) {
+      query.andWhere('user.username LIKE :username', {
+        username: `%${username}%`,
+      });
+    }
+    if (email) {
+      query.andWhere('user.email LIKE :email', {
+        email: `%${email}%`,
+      });
+    }
+    try {
+      this.logger.log('Fetching records');
+      return await query.getMany();
+    } catch (e) {
+      this.logger.error(`Internal server error ${e.stack}`);
       throw new InternalServerErrorException();
     }
   }
